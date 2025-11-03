@@ -1,28 +1,19 @@
 <?php
 session_start();
-
-// daftar produk dummy (sesuai dengan products.php)
-$products = [
-    1 => ["nama" => "Cardigan", "harga" => 60000],
-    2 => ["nama" => "Basic Jeans", "harga" => 150000],
-    3 => ["nama" => "Blouse Rose", "harga" => 80000],
-    4 => ["nama" => "Kemeja Kotak", "harga" => 150000],
-    5 => ["nama" => "Rok Jeans", "harga" => 250000],
-    6 => ["nama" => "T-Shirt", "harga" => 100000],
-    7 => ["nama" => "Tunik Sage", "harga" => 120000],
-];
+include 'koneksi.php'; // sambungkan ke database
 
 // Tambah ke keranjang
 if (isset($_GET['action']) && $_GET['action'] == "add") {
     $id = intval($_GET['id']);
-    if (isset($products[$id])) {
+    $result = mysqli_query($conn, "SELECT * FROM produk WHERE id='$id'");
+    if ($result && mysqli_num_rows($result) > 0) {
         $_SESSION['cart'][$id] = ($_SESSION['cart'][$id] ?? 0) + 1;
     }
     header("Location: cart.php");
     exit;
 }
 
-// Hapus item
+// Hapus item dari keranjang
 if (isset($_GET['action']) && $_GET['action'] == "remove") {
     $id = intval($_GET['id']);
     unset($_SESSION['cart'][$id]);
@@ -30,6 +21,7 @@ if (isset($_GET['action']) && $_GET['action'] == "remove") {
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 
@@ -160,20 +152,23 @@ if (isset($_GET['action']) && $_GET['action'] == "remove") {
                 <?php
                 $grandTotal = 0;
                 foreach ($_SESSION['cart'] as $id => $jumlah):
-                    if (!isset($products[$id])) continue;
-                    $nama = $products[$id]['nama'];
-                    $harga = $products[$id]['harga'];
-                    $total = $harga * $jumlah;
-                    $grandTotal += $total;
+                    $result = mysqli_query($conn, "SELECT * FROM produk WHERE id='$id'");
+                    if ($result && mysqli_num_rows($result) > 0):
+                        $p = mysqli_fetch_assoc($result);
+                        $nama = $p['nama'];
+                        $harga = $p['harga'];
+                        $total = $harga * $jumlah;
+                        $grandTotal += $total;
                 ?>
-                    <tr>
-                        <td><?= $nama; ?></td>
-                        <td>Rp <?= number_format($harga, 0, ',', '.'); ?></td>
-                        <td><?= $jumlah; ?></td>
-                        <td>Rp <?= number_format($total, 0, ',', '.'); ?></td>
-                        <td><a href="cart.php?action=remove&id=<?= $id; ?>" class="btn btn-red">Hapus</a></td>
-                    </tr>
-                <?php endforeach; ?>
+                        <tr>
+                            <td><?= htmlspecialchars($nama); ?></td>
+                            <td>Rp <?= number_format($harga, 0, ',', '.'); ?></td>
+                            <td><?= $jumlah; ?></td>
+                            <td>Rp <?= number_format($total, 0, ',', '.'); ?></td>
+                            <td><a href="cart.php?action=remove&id=<?= $id; ?>" class="btn btn-red">Hapus</a></td>
+                        </tr>
+                <?php endif;
+                endforeach; ?>
                 <tr>
                     <td colspan="3"><b>Total Keseluruhan</b></td>
                     <td colspan="2"><b>Rp <?= number_format($grandTotal, 0, ',', '.'); ?></b></td>
