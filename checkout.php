@@ -33,7 +33,7 @@ if (isset($_POST['checkout'])) {
 
     $query = "INSERT INTO pesanan (nama_pelanggan, alamat, no_hp, produk, total) 
               VALUES ('$nama', '$alamat', '$no_hp', '$produk', '$total')";
-    mysqli_query($koneksi, $query);
+    mysqli_query($conn, $query);
 
     unset($_SESSION['cart']); // kosongkan keranjang
     echo "<script>alert('Pesanan berhasil dikirim!'); window.location='products.php';</script>";
@@ -117,5 +117,6 @@ if (isset($_POST['checkout'])) {
         </form>
     </div>
 </body>
+
 
 </html>
